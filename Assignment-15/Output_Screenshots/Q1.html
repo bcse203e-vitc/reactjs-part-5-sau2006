@@ -1,1 +1,179 @@
+import React, { useState } from "react";
+import ContactForm from "./components/ContactForm";
+import ContactList from "./components/ContactList";
+import "./styles.css";
 
+const App = () => {
+  const [contacts, setContacts] = useState([]);
+
+  // Add Contact
+  const addContact = (contact) => {
+    setContacts([...contacts, { id: Date.now(), ...contact }]);
+  };
+
+  // Delete Contact
+  const deleteContact = (id) => {
+    setContacts(contacts.filter(contact => contact.id !== id));
+  };
+
+  // Edit Contact
+  const editContact = (id, updatedContact) => {
+    setContacts(
+      contacts.map(contact => (contact.id === id ? updatedContact : contact))
+    );
+  };
+
+  return (
+    <div className="container">
+      <h1>Contact List</h1>
+      <ContactForm addContact={addContact} />
+      <ContactList contacts={contacts} deleteContact={deleteContact} editContact={editContact} />
+    </div>
+  );
+};
+
+export default App;
+
+
+
+
+
+
+
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+
+const ContactForm = ({ addContact }) => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!name || !email) return;
+    addContact({ name, email });
+    setName("");
+    setEmail("");
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        placeholder="Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <button type="submit">Add Contact</button>
+    </form>
+  );
+};
+
+ContactForm.propTypes = {
+  addContact: PropTypes.func.isRequired,
+};
+
+export default ContactForm;
+
+
+
+
+
+
+
+import React from "react";
+import PropTypes from "prop-types";
+import ContactItem from "./ContactItem";
+
+const ContactList = ({ contacts, deleteContact, editContact }) => {
+  return (
+    <div>
+      {contacts.length === 0 ? <p>No contacts available.</p> : (
+        contacts.map((contact) => (
+          <ContactItem key={contact.id} contact={contact} deleteContact={deleteContact} editContact={editContact} />
+        ))
+      )}
+    </div>
+  );
+};
+
+ContactList.propTypes = {
+  contacts: PropTypes.array.isRequired,
+  deleteContact: PropTypes.func.isRequired,
+  editContact: PropTypes.func.isRequired,
+};
+
+export default ContactList;
+
+
+
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+
+const ContactItem = ({ contact, deleteContact, editContact }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [updatedName, setUpdatedName] = useState(contact.name);
+  const [updatedEmail, setUpdatedEmail] = useState(contact.email);
+
+  const handleEdit = () => {
+    editContact(contact.id, { id: contact.id, name: updatedName, email: updatedEmail });
+    setIsEditing(false);
+  };
+
+  return (
+    <div className="contact-item">
+      {isEditing ? (
+        <>
+          <input value={updatedName} onChange={(e) => setUpdatedName(e.target.value)} />
+          <input value={updatedEmail} onChange={(e) => setUpdatedEmail(e.target.value)} />
+          <button onClick={handleEdit}>Save</button>
+        </>
+      ) : (
+        <>
+          <p>{contact.name} - {contact.email}</p>
+          <button onClick={() => setIsEditing(true)}>Edit</button>
+          <button onClick={() => deleteContact(contact.id)}>Delete</button>
+        </>
+      )}
+    </div>
+  );
+};
+
+ContactItem.propTypes = {
+  contact: PropTypes.object.isRequired,
+  deleteContact: PropTypes.func.isRequired,
+  editContact: PropTypes.func.isRequired,
+};
+
+export default ContactItem;
+
+
+
+
+.container {
+  max-width: 400px;
+  margin: auto;
+  text-align: center;
+}
+
+form input {
+  margin: 5px;
+  padding: 8px;
+}
+
+.contact-item {
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin: 5px;
+  display: flex;
+  justify-content: space-between;
+}
+
+button {
+  margin-left: 5px;
+}
